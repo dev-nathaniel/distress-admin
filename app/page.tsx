@@ -25,7 +25,7 @@ export default function Home() {
 
   const deploy = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/deploy')
+      const response = await axios.post('https://rarely-tight-burro.ngrok-free.app/deploy')
       console.log(response.data)
     } catch (error: any) {
       console.log(error.data)
