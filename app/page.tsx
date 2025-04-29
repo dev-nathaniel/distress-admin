@@ -34,7 +34,7 @@ export default function Home() {
 
   const selectDistress = async (data: any) => {
     setSelectedDistress(data)
-    // requestDirection()
+    requestDirection()
   }
 
   const requestDirection = async () => {
