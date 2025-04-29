@@ -27,12 +27,12 @@ export default function Home() {
     try {
       const response = await axios.post('http://localhost:5000/deploy')
       console.log(response.data)
-    } catch (error) {
+    } catch (error: any) {
       console.log(error.data)
     }
   }
 
-  const selectDistress = async (data) => {
+  const selectDistress = async (data: any) => {
     setSelectedDistress(data)
     // requestDirection()
   }
@@ -81,7 +81,7 @@ export default function Home() {
         zoom: 15,
         speed: 1,
         curve: 1,
-        easing(t) {
+        easing(t: number) {
             return t;
         }
     })
