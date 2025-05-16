@@ -1,6 +1,10 @@
 "use client"
+import { login } from '@/lib/features/user/userSlice';
+import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import axios from 'axios';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { FaGoogle, FaGithub } from 'react-icons/fa';
 
 export default function LoginScreen() {
@@ -8,6 +12,29 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const token = useAppSelector((state) => state.user.token);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const validateToken = async () => {
+        try {
+          const response = await axios.get('https://distress-server.onrender.com/api/auth/token/validate', {headers: {Authorization: `Bearer ${token}` }});
+          // if (!response.data.valid) {
+          //   router.push('/login');
+          // }
+          router.push('/admin')
+        } catch (error) {
+          console.error('Error validating token:', error);
+        //   router.push('/login');
+        }
+      };
+  
+    if (token) {
+        validateToken()
+    }
+  }, [token, router]);
 
   const validateEmail = (email: string) => {
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
@@ -29,13 +56,35 @@ export default function LoginScreen() {
   };
 
   const LogIn = async () => {
+    setIsLoading(true);
     if (!validateEmail(email) || !validatePassword(password)) return;
     try {
-        const response = await axios.post('https://distress-server.onrender.com/api/login', {email, password})
+        const response = await axios.post('https://distress-server.onrender.com/api/auth/admin/login', {email, password})
+        const token = response.data.token; // Get the token from the response
+        // axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log(token, 'on login')
+        dispatch(login(token))
+        setIsLoading(false)
+        toast.success('Signed in successfully!', {
+            style: {
+                background: '#111827',
+                color: '#f87171'
+            }
+        })
+        router.push('/admin'); // Redirect to homepage after login
     } catch (error) {
-        console.log(error)
+      setIsLoading(false);
+      toast.error('Invalid credentials', {
+        style: {
+          background: '#111827',
+          color: '#f87171'
+        }
+      });
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[url('/background-map.jpg')] bg-cover bg-center flex items-center justify-center relative">
@@ -59,7 +108,33 @@ export default function LoginScreen() {
           onChange={(e) => setPassword(e.target.value)}
         />
         <div className="text-red-500 text-xs mb-2">{passwordError}</div>
-        <button className="w-full py-3 mb-4 bg-red-700 hover:bg-red-800 rounded-lg font-semibold text-white" onClick={LogIn}>Sign In</button>
+        <button disabled={isLoading} className="w-full py-3 mb-4 bg-red-700 hover:bg-red-800 rounded-lg font-semibold text-white flex items-center justify-center gap-2 cursor-pointer" onClick={LogIn}>
+            {isLoading ? (
+                <svg 
+                className='animate-spin h-5 w-5 text-white'
+                xmlns='https://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                >
+                    <circle
+                    className='opacity-25'
+                    cx={'12'}
+                    cy={'12'}
+                    r={'10'}
+                    stroke='currentColor'
+                    strokeWidth={'4'}
+                    ></circle>
+                    <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z'
+                    ></path>
+                </svg>
+                // <span className='loader border-white border-t-transparent border-2 w-5 h-5 rounded-full animate-spin'></span>
+            ) : (
+            'Sign In'
+          )}
+        </button>
 
         {/* <div className="flex items-center justify-between mb-4">
           <label className="inline-flex items-center">

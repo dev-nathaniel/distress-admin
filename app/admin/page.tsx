@@ -4,6 +4,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useRouter } from "next/navigation";
 
 
 const alerts = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -15,13 +17,37 @@ export default function Admin() {
   const [selectedDistress, setSelectedDistress] = useState();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [reverseGeocodedAlerts, setReverseGeocodedAlerts] = useState<any[]>([]);
+  const token = useAppSelector((state)=>state.user.token)
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+
+  useEffect(() => {
+    console.log(token, 'admin')
+    const validateToken = async () => {
+      try {
+        const response = await axios.get('https://distress-server.onrender.com/api/auth/token/validate', {headers: {Authorization: `Bearer ${token}` }});
+        // if (!response.data.valid) {
+        //   router.push('/login');
+        // }
+      } catch (error) {
+        console.error('Error validating token:', error);
+        router.push('/login');
+      }
+    };
+
+    if (token) {
+      validateToken();
+    } else {
+      router.push('/login');
+    }
+  }, [token, router]);
 
   mapboxgl.accessToken = 'pk.eyJ1Ijoib2xvd29hIiwiYSI6ImNsZjNyMndhcTBnNm8zcm50cmFkZzI1NXAifQ.sUHuNAw9DIe1ATZcaV_ETg';
   console.log(alerts)
   useEffect(() => {
     const fetchDistressAlerts = async () => {
       try {
-        const response = await axios.get('https://distress-server.onrender.com/api/distress', {headers: {Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjUwNWE4MDUwZWNhNGQ0ODdiYzA3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NzMzMjQ5MywiZXhwIjoxNzQ3MzQzMjkzfQ.VgjGkGcmFuI96vIvoFseq8ULZqYTwmo2EFD82yUNv5E`}});
+        const response = await axios.get('https://distress-server.onrender.com/api/distress', {headers: {Authorization: `Bearer ${token}`}});
         console.log(response)
         setAlerts(response.data);
       } catch (error) {
@@ -53,7 +79,7 @@ export default function Admin() {
 
   const deploy = async (distressId:string) => {
     try {
-      const response = await axios.post('https://distress-server.onrender.com/deploy', {distressId}, {headers: {Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjUwNWE4MDUwZWNhNGQ0ODdiYzA3YyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NzMzMjQ5MywiZXhwIjoxNzQ3MzQzMjkzfQ.VgjGkGcmFuI96vIvoFseq8ULZqYTwmo2EFD82yUNv5E`}});
+      const response = await axios.post('https://distress-server.onrender.com/deploy', {distressId}, {headers: {Authorization: `Bearer ${token}`}});
       console.log(response.data);
     } catch (error: any) {
       console.log(error.data);
