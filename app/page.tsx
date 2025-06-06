@@ -50,9 +50,21 @@ export default function Home() {
       const res = await axios.post(`https://distress-server.onrender.com/api/distress/escalate/${id}`, {email, phoneNumber: null, additionalInfo: additionalInfo})
       console.log(res.data)
       setIsLoading(false)
+      toast.success('Distress successfully escalated', {
+        style: {
+          background: '#111827',
+          color: '#f87171'
+      }
+      })
     } catch (error) {
       console.log(error)
       setIsLoading(false)
+      toast.error('Something went wrong', {
+        style: {
+          background: '#111827',
+          color: '#f87171'
+      }
+      })
     }
   }
   return (
