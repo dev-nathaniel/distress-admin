@@ -11,11 +11,82 @@ import { Pause, Play } from "lucide-react";
 
 const alerts = [1, 2, 3, 4, 5, 6, 7, 8]
 
+type distress = {
+  _id: string,
+  user: {
+      _id: string,
+      fullName: string,
+      email: string,
+      password: string,
+      phoneNumber: string,
+      homeAddress: string,
+      emergencyContacts: [
+          {
+              firstName: string,
+              emails: [],
+              phoneNumbers: [
+                  {
+                      number: string,
+                      digits: string,
+                      countryCode: string,
+                      _id: string
+                  }
+              ],
+              _id: string
+          }
+      ],
+      role: string,
+      createdAt: string,
+      updatedAt: string,
+      __v: number
+  },
+  message: string,
+  location: [
+      {
+          coords: {
+              accuracy: number,
+              altitude: number,
+              altitudeAccuracy: number,
+              heading: number,
+              latitude: number,
+              longitude: number,
+              speed: number
+          },
+          timestamp: number,
+          _id: string
+      }
+  ],
+  escalated: {
+      status: boolean,
+      by: null,
+      _id: string
+  },
+  droneDeployed: boolean,
+  resolved: boolean,
+  additionalDetails: [
+      {
+          batteryLevel: string,
+          _id: string,
+          timeAdded: string
+      }
+  ],
+  audioRecordings: [
+      {
+          url: string,
+          _id: string,
+          timeAdded: string
+      }
+  ],
+  createdAt: string,
+  updatedAt: string,
+  __v: number
+}
+
 
 export default function Admin() {
   const mapContainer = useRef<any>(null)
   const map = useRef<mapboxgl.Map | any>(null);
-  const [selectedDistress, setSelectedDistress] = useState();
+  const [selectedDistress, setSelectedDistress] = useState<distress>();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [reverseGeocodedAlerts, setReverseGeocodedAlerts] = useState<any[]>([]);
   const token = useAppSelector((state)=>state.user.token)
@@ -95,7 +166,7 @@ export default function Admin() {
   };
 
   useEffect(()=> {
-    if (videoRef.current && selectedDistress && selectedDistress?.additionalDetails?.length > 0) {
+    if (videoRef.current && selectedDistress && selectedDistress?.audioRecordings?.length > 0) {
       videoRef.current.src = selectedDistress?.audioRecordings?.[0].url
       videoRef.current.load()
     }
@@ -221,7 +292,7 @@ export default function Admin() {
       <div className="w-dvw h-dvh relative" ref={mapContainer}>
         {/* <div className="absolute w-full h-full items-center justify-end flex px-8"> */}
 
-        {selectedDistress?.audioRecordings?.length > 0 ? <div className="absolute left-8 bottom-8 w-1/6 h-1/6 z-50 rounded-2xl flex items-center justify-center bg-[#000000BF] cursor-pointer">
+        {selectedDistress && selectedDistress?.audioRecordings?.length > 0 ? <div className="absolute left-8 bottom-8 w-1/6 h-1/6 z-50 rounded-2xl flex items-center justify-center bg-[#000000BF] cursor-pointer">
         <video ref={videoRef} controls className="hidden">
           <source type="audio/x-m4a" />
         </video>
