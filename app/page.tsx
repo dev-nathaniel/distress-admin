@@ -46,6 +46,8 @@ export default function Home() {
       setIsLoading(false)
       return
     };
+    console.log(email, 'email')
+    console.log(additionalInfo, 'add')
     try {
       const res = await axios.post(`https://distress-server.onrender.com/api/distress/escalate/${id}`, {email, phoneNumber: null, additionalInfo: additionalInfo})
       console.log(res.data)
