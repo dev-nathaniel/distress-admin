@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { useRouter } from "next/navigation";
+import { Pause, Play } from "lucide-react";
 
 
 const alerts = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -20,6 +21,8 @@ export default function Admin() {
   const token = useAppSelector((state)=>state.user.token)
   const dispatch = useAppDispatch()
   const router = useRouter()
+  const [play, setPlay] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     console.log(token, 'admin')
@@ -90,6 +93,14 @@ export default function Admin() {
     setSelectedDistress(data);
     requestDirection(data);
   };
+
+  useEffect(()=> {
+    if (videoRef.current && selectedDistress && selectedDistress?.additionalDetails?.length > 0) {
+      videoRef.current.src = selectedDistress?.audioRecordings?.[0].url
+      videoRef.current.load()
+    }
+
+  }, [selectedDistress])
 
   const requestDirection = async (alert: any) => {
     try {
@@ -179,10 +190,45 @@ export default function Admin() {
     }
   }
 
+  const playVideo = () => {
+    setPlay(true)
+    videoRef.current?.play()
+  }
+
+  const pauseVideo = () => {
+    setPlay(false)
+    videoRef.current?.pause()
+  }
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) {
+      return
+    }
+
+    const handleEnded = () => {
+      setPlay(false)
+    }
+
+    video.addEventListener('ended', handleEnded)
+
+    return () => video.removeEventListener('ended', handleEnded)
+  } ,[videoRef.current])
+
+
   return (
     <div className="relative" id="map">
       <div className="w-dvw h-dvh relative" ref={mapContainer}>
         {/* <div className="absolute w-full h-full items-center justify-end flex px-8"> */}
+
+        {selectedDistress?.audioRecordings?.length > 0 ? <div className="absolute left-8 bottom-8 w-1/6 h-1/6 z-50 rounded-2xl flex items-center justify-center bg-[#000000BF] cursor-pointer">
+        <video ref={videoRef} controls className="hidden">
+          <source type="audio/x-m4a" />
+        </video>
+        {!play ? <Play onClick={()=>playVideo()} />
+        :
+        <Pause onClick={()=>pauseVideo()} />}
+        </div> : null}
 
         <div className="absolute right-8 top-1/2 -translate-y-1/2 h-11/12 w-1/4 z-50 rounded-3xl bg-[#000000BF] py-6 overflow-y-scroll [&::-webkit-scrollbar]:w-0 gap-6 flex flex-col">
           <p className="font-bold text-[24px] px-6">Alerts</p>
@@ -227,7 +273,7 @@ export default function Admin() {
                 <p className="text-[#E9E9E9] font-medium">{getTimeAgo(new Date(data.createdAt))}</p>
               </div>
               <div className="flex justify-between items-center">
-                {!data.droneDeployed ? <div onClick={()=>deploy(data._id)} className="bg-[#C60000] px-4 py-1 rounded-2xl cursor-pointer">
+                {data?.escalated?.status ? <div onClick={()=>deploy(data._id)} className="bg-[#C60000] px-4 py-1 rounded-2xl cursor-pointer">
                   <p>Deploy</p>
                 </div>: <div></div>}
                 <p className="text-[#7A7A7A] underline">View Feedback</p>

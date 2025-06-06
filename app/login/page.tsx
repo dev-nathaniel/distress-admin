@@ -46,18 +46,26 @@ export default function LoginScreen() {
     return true;
   };
 
-  const validatePassword = (password: string) => {
-    if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
-      return false;
-    }
-    setPasswordError('');
-    return true;
-  };
+  // const validatePassword = (password: string) => {
+  //   if (password.length < 8) {
+  //     setPasswordError('Password must be at least 8 characters');
+  //     return false;
+  //   }
+  //   setPasswordError('');
+  //   return true;
+  // };
 
   const LogIn = async () => {
     setIsLoading(true);
-    if (!validateEmail(email) || !validatePassword(password)) return;
+    if (!validateEmail(email)) {
+      toast.error(emailError, {
+        style: {
+          background: '#111827',
+          color: '#f87171'
+      }
+      })
+      return
+    };
     try {
         const response = await axios.post('https://distress-server.onrender.com/api/auth/admin/login', {email, password})
         const token = response.data.token; // Get the token from the response
