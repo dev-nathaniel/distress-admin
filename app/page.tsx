@@ -64,10 +64,11 @@ export default function Home() {
       }
       })
     } catch (error: any) {
+      console.log(error.response.status, error.response.status === 404)
       if (error.response && error.response.status === 404) {
         console.log(error)
         setIsLoading(false)
-        toast.error(error.message, {
+        toast.error(error.response.data.message, {
           style: {
             background: '#111827',
             color: '#f87171'
